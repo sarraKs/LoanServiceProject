@@ -25,7 +25,7 @@ public class CustomerLoanRequest extends ServerResource {
 	        String cname = form.getFirstValue("cname");  
 	 
 	        if(cid.equals("123")){ // Assume that user id 123 is existed
-	        result = new StringRepresentation("Customer whose uid="+ cid +" is updated",  
+	        result = new StringRepresentation("Customer whose cid="+ cid +" is updated",  
 	            MediaType.TEXT_PLAIN);
 	        } 
 	        else { // otherwise add user  

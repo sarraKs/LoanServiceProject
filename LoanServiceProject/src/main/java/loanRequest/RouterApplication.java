@@ -14,7 +14,7 @@ public class RouterApplication extends Application{
 		Router router = new Router(getContext());
 		// Defines only two routes
 		router.attach("/customers", CustomerLoanRequest.class);
-		router.attach("/customers/{uid}", CustomerLoanRequest.class);
+		router.attach("/customers/{cid}", CustomerLoanRequest.class);
 		return router;
 	}
 }

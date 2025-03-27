@@ -16,11 +16,11 @@ public class ClientCall {
 		// TODO Auto-generated method stub
  
 		// Create the client resource  
-		ClientResource resource = new ClientResource("http://localhost:8186/users");  
+		ClientResource resource = new ClientResource("http://localhost:8186/customers");  
  
 		Form form = new Form();  
-		form.add("uid", "1234");  
-		form.add("uname", "John");  
+		form.add("cid", "1234");  
+		form.add("cname", "John");  
  
 		// Write the response entity on the console
 		try {
