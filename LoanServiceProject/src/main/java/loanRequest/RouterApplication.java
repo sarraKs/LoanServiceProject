@@ -13,9 +13,8 @@ public class RouterApplication extends Application{
 		// Create a router Restlet that routes each call to a new respective instance of resource.
 		Router router = new Router(getContext());
 		// Defines only two routes
-		router.attach("/users", UserResource.class);
-		router.attach("/users/{uid}", UserResource.class);
-		router.attach("/users/{uid}/items", UserItemResource.class);
+		router.attach("/customers", CustomerLoanRequest.class);
+		router.attach("/customers/{uid}", CustomerLoanRequest.class);
 		return router;
 	}
 }

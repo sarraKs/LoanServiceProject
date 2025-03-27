@@ -1,5 +1,5 @@
 package loanRequest;
- 
+
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
@@ -7,12 +7,13 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
- 
-public class UserResource extends ServerResource {  	
+
+public class CustomerLoanRequest extends ServerResource {
+
 	@Get  
 	public String toString() {
-		String uid = (String) getRequestAttributes().get("uid");
-		return "Information about user \"" + uid + "\" is: <nothing>";  
+		String cid = (String) getRequestAttributes().get("cid");
+		return "Information about customer \"" + cid + "\" is: <nothing>";  
 	}  
 	
 	 @Post
@@ -20,18 +21,18 @@ public class UserResource extends ServerResource {
 			Representation result = null;  
 	        // Parse the given representation and retrieve data
 	        Form form = new Form(entity);  
-	        String uid = form.getFirstValue("uid");  
-	        String uname = form.getFirstValue("uname");  
+	        String cid = form.getFirstValue("cid");  
+	        String cname = form.getFirstValue("cname");  
 	 
-	        if(uid.equals("123")){ // Assume that user id 123 is existed
-	        result = new StringRepresentation("User whose uid="+ uid +" is updated",  
+	        if(cid.equals("123")){ // Assume that user id 123 is existed
+	        result = new StringRepresentation("Customer whose uid="+ cid +" is updated",  
 	            MediaType.TEXT_PLAIN);
 	        } 
 	        else { // otherwise add user  
-	        result = new StringRepresentation("User " + uname + " is added",  
+	        result = new StringRepresentation("Customer " + cname + " is added",  
 	            MediaType.TEXT_PLAIN);
 	        }  
 	 
 	        return result;  
 	    } 
-}  
+}
