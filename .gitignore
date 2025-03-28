@@ -25,3 +25,14 @@
 **/*.fdb_latexmk
 **/.vscode
 **/*.adoc
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env/
+.venv/
+*.egg-info/
+dist/
+build/
+*.egg
+
