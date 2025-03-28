@@ -10,6 +10,8 @@ import risk_pb2_grpc
 
 class RiskAssessmentServicer(risk_pb2_grpc.RiskAssessmentServicer):
 
+    # Les customers pairs ont un risque faible et les autre un risque élevé.
+    
     def AssessCustomerRisk(self, request, context):
         # Extraire les chiffres de l'ID client
         digits = ''.join(filter(str.isdigit, request.customer_id))
