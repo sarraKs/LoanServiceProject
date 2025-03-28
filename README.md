@@ -34,10 +34,25 @@
     
     pip install -r requirements.txt
 
-- From within the customer-service/ folder, run:
+- From within the customer-service folder, run:
 
     uvicorn main:app --reload
 
+- From within the client folder, run : 
+
+    python main.py
+
+- To confirm data in db :
+
+    docker exec -it loan_postgres psql -U user1 -d loans_db
+
+- in the following prompt : loans_db=#
+
+    SELECT * FROM loan_requests;
+
+- to quit database :
+
+    \q
 
 
 
