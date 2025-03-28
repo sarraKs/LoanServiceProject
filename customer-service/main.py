@@ -1,5 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, EmailStr
+import grpc
+import sys
+sys.path.append("./risk-assessment-service/generated")  # chemin vers les fichiers générés
+import risk_pb2
+import risk_pb2_grpc
+from zeep import Client
 from enum import Enum
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -38,6 +44,8 @@ class LoanRequest(BaseModel):
 def root():
     return {"message": "CustomerService with PostgreSQL is running"}
 
+# ---------- Endpoint REST ----------
+
 @app.post("/apply-loan")
 def apply_loan(request: LoanRequest):
     db = SessionLocal()
@@ -46,7 +54,18 @@ def apply_loan(request: LoanRequest):
     if exists:
         db.close()
         raise HTTPException(status_code=400, detail="Customer already exists")
+    
+    # Appel SOAP pour vérifier le montant
+    if not check_loan_amount(request.customer_id, request.loan_amount):
+        db.close()
+        raise HTTPException(status_code=400, detail="Loan amount exceeds allowed limit")
 
+    # Appel GRPC pour vérifier le risque 
+    risk_level = get_customer_risk(request.customer_id)
+    if risk_level == "high" and request.loan_amount >= 20000:
+        db.close()
+        raise HTTPException(status_code=400, detail="Loan rejected due to high risk")
+    
     new_request = CustomerLoanRequest(**request.dict())
 
     db.add(new_request)
@@ -54,4 +73,29 @@ def apply_loan(request: LoanRequest):
     db.refresh(new_request)
     db.close()
 
-    return {"message": "Loan request received", "customer_id": request.customer_id}
+    return {"message": "Loan request received", "customer_id": request.customer_id, "risk_level":risk_level}
+
+#-----------------------SOAP client ------------------
+def check_loan_amount(customer_id: str, amount: float) -> bool:
+    try:
+        wsdl_url = "http://localhost:8001/?wsdl"  # SOAP service WSDL
+        client = Client(wsdl=wsdl_url)
+        return client.service.loan_amount_acceptation(customer_id, amount)
+    except Exception as e:
+        print("SOAP Error:", e)
+        return False  # on rejette si le service échoue
+
+
+#-----------------------GRPC Client--------------------
+def get_customer_risk(customer_id: str) -> str:
+    try:
+        channel = grpc.insecure_channel('localhost:50051')  # Port de ton service gRPC
+        stub = risk_pb2_grpc.RiskAssessmentStub(channel)
+        request = risk_pb2.RiskRequest(customer_id=customer_id)
+        response = stub.AssessCustomerRisk(request)
+        return response.risk_level  # "low" ou "high"
+    except Exception as e:
+        print("gRPC Error:", e)
+        return "high"  # par défaut on rejette si le service échoue
+
+   
