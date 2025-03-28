@@ -1,5 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, EmailStr
+import grpc
+import sys
+sys.path.append('./grpc') # chemin vers les fichiers générés
+import risk_pb2
+import risk_pb2_grpc
+from zeep import Client
 from enum import Enum
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,6 +17,7 @@ app = FastAPI()
 # PostgreSQL database setup
 DB_USER = os.getenv("DB_USER", "user1")
 DB_PASS = os.getenv("DB_PASS", "password1")
+#le db host devrait etre localost quand on execute localement et postgres quand on execute avec docker
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "loans_db")
@@ -38,6 +45,8 @@ class LoanRequest(BaseModel):
 def root():
     return {"message": "CustomerService with PostgreSQL is running"}
 
+# ---------- Endpoint REST ----------
+
 @app.post("/apply-loan")
 def apply_loan(request: LoanRequest):
     db = SessionLocal()
@@ -46,12 +55,47 @@ def apply_loan(request: LoanRequest):
     if exists:
         db.close()
         raise HTTPException(status_code=400, detail="Customer already exists")
-
+    
     new_request = CustomerLoanRequest(**request.dict())
 
     db.add(new_request)
     db.commit()
     db.refresh(new_request)
+
+    # Appel SOAP pour vérifier le montant (à voir)
+    if not check_loan_amount(request.customer_id, request.loan_amount):
+        raise HTTPException(status_code=400, detail="Loan amount exceeds allowed limit")
+
+    # Appel GRPC pour vérifier le risque 
+    #risk_level = get_customer_risk(request.customer_id)
+    #if risk_level == "high" and request.loan_amount >= 20000:
+    #   raise HTTPException(status_code=400, detail="Loan rejected due to high risk")
+
+    #return {"message": "Loan request received", "customer_id": request.customer_id}
     db.close()
 
-    return {"message": "Loan request received", "customer_id": request.customer_id}
+#-----------------------SOAP client ------------------(à voir) 
+def check_loan_amount(customer_id: str, amount: float) -> bool:
+    try:
+        wsdl_url = "http://localhost:8001/?wsdl"
+        client = Client(wsdl=wsdl_url)
+        result = client.service.loan_amount_acceptation(customer_id, float(amount))
+        print("SOAP result:", result)
+        return result
+    except Exception as e:
+        print("SOAP Error:", e)
+        return False
+
+#-----------------------GRPC Client--------------------(à voir)
+def get_customer_risk(customer_id: str) -> str:
+    try:
+        channel = grpc.insecure_channel('localhost:50051')  # Port de ton service gRPC
+        stub = risk_pb2_grpc.RiskAssessmentStub(channel)
+        request = risk_pb2.RiskRequest(customer_id=customer_id)
+        response = stub.AssessCustomerRisk(request)
+        return response.risk_level  # "low" ou "high"
+    except Exception as e:
+        print("gRPC Error:", e)
+        return "high"  # par défaut on rejette si le service échoue
+
+   
