@@ -14,7 +14,7 @@
 - calls CustomerService to register and create a new loan. 
 - notification : loan declined if the loan amount is high than maximum firm capacity
 - notification : loan declined if risk is high
-- notification : asked to submit cashier check
+- notification : asked to submit cashier check, with checkAmount equal to loanAmount/10
 - validateCheck : submit check (call CustomerService ?) for validation
 - notification : loan declined if check not validated, approved if check validated
 
@@ -24,8 +24,8 @@
 - CustomerService (REST API) : Handles customer registration and loan application form submission.
 - LoanVerificationService (SOAP API) : Checks whether the requested loan amount is lower than the firm's maximum limit. If the amount exceeds the limit, the loan is rejected (NotificationService is called).
 - RiskAssessmentService (gRPC API) : Evaluates the customer's financial profile based on banking activity. Returns a risk level (Low, Medium, High). If the risk is High and the loan is >= 20000, the loan is rejected (NotificationService is called).
-- CheckValidationService (GraphQL API) : Requests a cashier's check from the customer. Then, validates the check with a bank service. 
-- BankService (SOAP API) : If the check is validated, it requests funds from a Loan Provider Service and adds them to the customer’s bank account. And, notifies the customer of the approval of the loan (NotificationService).
+- CheckValidationService (GraphQL API) : Receives customer's check and validates the check (checkAmount is equal to loanAmount/10 and signature is equal to True). If the check is validated, call BankService. Else the loan is rejected.
+- BankService (SOAP API) : Provides Loan and adds them to the customer’s bank account. And, notifies the customer of the approval of the loan (NotificationService).
 - NotificationService (REST API) : Notifies customers about loan approval or rejection via email/SMS.
 
 ### How to run the application 
