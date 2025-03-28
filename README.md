@@ -17,7 +17,7 @@
 
 ### A microservices architecture
 
-- CustomerService (REST API) : Handles customer loan application form submission.
+- CustomerService (REST API) : Handles customer registration loan application form submission.
 - LoanVerificationService (SOAP API) : Checks whether the requested loan amount is lower than the firm's maximum limit. If the amount exceeds the limit, the loan is rejected (NotificationService is called).
 - RiskAssessmentService (gRPC API) : Evaluates the customer's financial profile based on banking activity. Returns a risk level (Low, Medium, High). If the risk is High and the loan is >= 20000, the loan is rejected (NotificationService is called).
 - CheckValidationService (GraphQL API) : Requests a cashier's check from the customer. Then, validates the check with a bank service. 
