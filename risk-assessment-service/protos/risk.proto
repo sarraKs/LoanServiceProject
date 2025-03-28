@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package risk;
+
+service RiskAssessment {
+  rpc AssessCustomerRisk (RiskRequest) returns (RiskResponse);
+}
+
+message RiskRequest {
+  string customer_id = 1;
+}
+
+message RiskResponse {
+  string customer_id = 1;
+  string risk_level = 2; // low, high
+}
