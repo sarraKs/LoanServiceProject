@@ -10,6 +10,7 @@ psycopg2-binary
 
 # Pydantic for validation
 pydantic
+email-validator
 
 # gRPC
 grpcio

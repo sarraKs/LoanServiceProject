@@ -28,6 +28,32 @@
 - BankService (SOAP API) : If the check is validated, it requests funds from a Loan Provider Service and adds them to the customer’s bank account. And, notifies the customer of the approval of the loan (NotificationService).
 - NotificationService (REST API) : Notifies customers about loan approval or rejection via email/SMS.
 
+### How to run the application 
+
+- install the requirements : 
+    
+    pip install -r requirements.txt
+
+- From within the customer-service folder, run:
+
+    uvicorn main:app --reload
+
+- From within the client folder, run : 
+
+    python main.py
+
+- To confirm data in db :
+
+    docker exec -it loan_postgres psql -U user1 -d loans_db
+
+- in the following prompt : loans_db=#
+
+    SELECT * FROM loan_requests;
+
+- to quit database :
+
+    \q
+
 
 
 
