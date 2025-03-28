@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+
+  customer-service:
+    build: ./customer-service
+    container_name: customer_service
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    environment:
+      DB_USER: user1
+      DB_PASS: password1
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: loans_db
+
   postgres:
     image: postgres:15
     container_name: loan_postgres
