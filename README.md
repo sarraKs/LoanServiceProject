@@ -12,7 +12,7 @@
 
 ### client : 
 - calls CustomerService to register and create a new loan. 
-- notification : loan declined if the loan amount is high than maximum firm capacity
+- notification : loan declined if the loan amount is higher than maximum firm capacity
 - notification : loan declined if risk is high
 - notification : asked to submit cashier check, with checkAmount equal to loanAmount/10
 - validateCheck : submit check (call CustomerService ?) for validation
@@ -58,6 +58,16 @@
 
     docker compose up --build
 
+
+- Steps to run the app : 
+
+    -  Launch the soap service : 
+        - cd loan-verification-service
+        - python3 main.py
+    - Launch the GRPC service : 
+        - cd risk-assessment-service
+        - python3 main.py
+    - Launch the customer service : 
 
 
 

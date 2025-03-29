@@ -1,0 +1,28 @@
+# FastAPI & ASGI Server
+fastapi
+uvicorn
+
+# GraphQL
+graphene
+
+# GraphQL client dependency
+gql[requests]
+
+# PostgreSQL + ORM
+sqlalchemy
+psycopg2-binary
+
+# Pydantic for validation
+pydantic
+email-validator
+
+# gRPC
+grpcio
+grpcio-tools
+
+# SOAP
+spyne
+lxml  # pour validation XML avec SOAP
+
+# Optional: to make environment explicit
+python-dotenv  # si tu charges des variables .env
