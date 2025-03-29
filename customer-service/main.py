@@ -64,13 +64,7 @@ def apply_loan(request: LoanRequest):
     db.commit()
     db.refresh(new_request)
 
-<<<<<<< HEAD
     # Appel SOAP 
-=======
-    # ADD NOTIFICATION : LOAN REQUEST SUBMITED
-
-    # Appel SOAP avec affichage du résultat
->>>>>>> 8ce776dfaaafde4e6d6b100ff9208209d4c7dc6c
     soap_result = check_loan_amount(request.customer_id, request.loan_amount)
     if soap_result:
         print(f"SOAP check passed: Loan amount {request.loan_amount} is accepted for {request.customer_id}")
