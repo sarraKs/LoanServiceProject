@@ -11,6 +11,7 @@ services:
       - postgres
       - loan-verification-service
       - check-validation-service
+      - risk-assessment-service  
     environment:
       DB_USER: user1
       DB_PASS: password1
@@ -29,6 +30,12 @@ services:
     container_name: check_validation_service
     ports:
       - "8002:8002"
+
+  risk-assessment-service:  
+    build: ./risk-assessment-service
+    container_name: risk_assessment_service
+    ports:
+      - "50051:50051"
 
   postgres:
     image: postgres:15

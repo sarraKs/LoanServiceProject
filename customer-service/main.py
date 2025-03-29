@@ -64,9 +64,13 @@ def apply_loan(request: LoanRequest):
     db.commit()
     db.refresh(new_request)
 
+<<<<<<< HEAD
+    # Appel SOAP 
+=======
     # ADD NOTIFICATION : LOAN REQUEST SUBMITED
 
     # Appel SOAP avec affichage du résultat
+>>>>>>> 8ce776dfaaafde4e6d6b100ff9208209d4c7dc6c
     soap_result = check_loan_amount(request.customer_id, request.loan_amount)
     if soap_result:
         print(f"SOAP check passed: Loan amount {request.loan_amount} is accepted for {request.customer_id}")
@@ -75,19 +79,24 @@ def apply_loan(request: LoanRequest):
         db.close()
         raise HTTPException(status_code=400, detail="Loan amount exceeds allowed limit")
 
-    # Appel gRPC (décommenter si prêt)
-    # risk = get_customer_risk(request.customer_id)
-    # if risk == "high" and request.loan_amount >= 20000:
-    #     print(f"Loan rejected: High risk and amount ≥ 20000 for {request.customer_id}")
-    #     db.close()
-    #     raise HTTPException(status_code=400, detail="Loan rejected due to high risk")
+    # Appel gRPC
+    risk = get_customer_risk(request.customer_id)
+    print(f"gRPC Risk check for {request.customer_id} returned: {risk}")
+    if risk == "high" and request.loan_amount >= 20000.0:
+        print(f"Loan rejected: High risk and amount ≥ 20000 for {request.customer_id}")
+        db.close()
+        raise HTTPException(status_code=400, detail="Loan rejected due to high risk")
 
     db.close()
-    return {
-        "message": "Loan request successfully processed",
-        "customer_id": request.customer_id
-    }
 
+    return {
+    "message": "Loan request successfully processed",
+    "customer_id": request.customer_id,
+    "risk_level": risk,
+    "loan_amount": request.loan_amount,
+    "loan_type": request.loan_type,
+    "status": "approved"
+    }
 
 #-----------------------SOAP client ------------------(à voir) 
 def check_loan_amount(customer_id: str, amount: float) -> bool:
@@ -104,7 +113,7 @@ def check_loan_amount(customer_id: str, amount: float) -> bool:
 #-----------------------GRPC Client--------------------(à voir)
 def get_customer_risk(customer_id: str) -> str:
     try:
-        channel = grpc.insecure_channel('localhost:50051')  # Port de ton service gRPC
+        channel = grpc.insecure_channel('risk-assessment-service:50051')  # Port de ton service gRPC
         stub = risk_pb2_grpc.RiskAssessmentStub(channel)
         request = risk_pb2.RiskRequest(customer_id=customer_id)
         response = stub.AssessCustomerRisk(request)
