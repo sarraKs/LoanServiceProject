@@ -131,15 +131,13 @@ def validate_check(data: CheckInput):
         raise HTTPException(status_code=404, detail="Customer not found")
 
     #-----------------------GraphQL Client--------------------
-    transport = RequestsHTTPTransport(url="http://localhost:8002/graphql", verify=False)
+    transport = RequestsHTTPTransport(url="http://check-validation-service:8002/graphql", verify=False)
     client = Client(transport=transport, fetch_schema_from_transport=False)
 
     query = gql("""
-        mutation ValidateCheck($checkAmount: Float!, $signature: Boolean!, $loanAmount: Float!) {
-            validateCheck(checkAmount: $checkAmount, signature: $signature, loanAmount: $loanAmount) {
-                ok
-            }
-        }
+    mutation ValidateCheck($checkAmount: Float!, $signature: Boolean!, $loanAmount: Float!) {
+        validateCheck(checkAmount: $checkAmount, signature: $signature, loanAmount: $loanAmount)
+    }
     """)
 
     result = client.execute(query, variable_values={
@@ -148,6 +146,6 @@ def validate_check(data: CheckInput):
         "loanAmount": loan.loan_amount
     })
 
-    return {"check_valid": result["validateCheck"]["ok"]}
+    return {"check_valid": result["validateCheck"]}
 
    

@@ -1,40 +1,46 @@
 import requests
 
-# URL of the customer-service API
+# URLs for the customer-service API
 API_URL_SUBMIT_LOAN = "http://localhost:8000/apply-loan"
 API_URL_VALIDATE_CHECK = "http://localhost:8000/validate-check"
 
-# Example loan application data
+# Example loan data to submit
 loan_data = {
-    "customer_id": "003",
-    "first_name": "Ines",
-    "last_name": "Ks",
-    "email": "saraks@example.com",
-    "phone": "55504558",
-    "address": "48 Example Street",
+    "customer_id": "004",
+    "first_name": "Johnny",
+    "last_name": "Hd",
+    "email": "johnny@example.com",
+    "phone": "55522",
+    "address": "86 Example Street",
     "loan_type": "commercial",
-    "loan_amount": 5000.0,
-    "loan_description": "buy a tv"
+    "loan_amount": 15000.0,
+    "loan_description": "buy something"
 }
 
-# Send POST request to customer-service to submit a loan
+# Submit loan request
 response = requests.post(API_URL_SUBMIT_LOAN, json=loan_data)
 
-# Show response
-print("Status Code:", response.status_code)
-print("Response:", response.json())
+print("Submit Loan Status Code:", response.status_code)
+try:
+    print("Submit Loan Response:", response.json())
+except Exception:
+    print("Submit Loan Response Error: Could not decode JSON")
 
-# TODO : Should receive a notification a submit a check
+# SHOULD RECEIVE NOTIFICATION HERE TO SUBMIT A CHECK 
+# THE VALIDATE CHECK REQUEST SHOULD ONLY BE MADE IF THIS NOTIFICATION ARRIVES 
 
+# Example check data to submit and validate
 check_data = {
-    "customer_id": "003",
-    "check_amount": 500.0,
+    "customer_id": "004",
+    "check_amount": 1200.0,
     "signature": True,
 }
 
-# Send POST request to customer-service to validate check
+# Validate the check
 response2 = requests.post(API_URL_VALIDATE_CHECK, json=check_data)
 
-# Show response
-print("Response2 Status Code:", response2.status_code)
-print("Response2:", response2.json())
+print("Validate Check Status Code:", response2.status_code)
+try:
+    print("Validate Check Response:", response2.json())
+except Exception:
+    print("Validate Check Response Error: Could not decode JSON")

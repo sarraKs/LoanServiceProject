@@ -2,11 +2,9 @@
 fastapi
 uvicorn
 
-# GraphQL
-graphene
-
 # GraphQL client dependency
 gql[requests]
+strawberry-graphql[fastapi]
 
 # PostgreSQL + ORM
 sqlalchemy
@@ -23,6 +21,7 @@ grpcio-tools
 # SOAP
 spyne
 lxml  # pour validation XML avec SOAP
+zeep
 
 # Optional: to make environment explicit
 python-dotenv  # si tu charges des variables .env

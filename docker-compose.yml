@@ -10,6 +10,7 @@ services:
     depends_on:
       - postgres
       - loan-verification-service
+      - check-validation-service
     environment:
       DB_USER: user1
       DB_PASS: password1
@@ -22,6 +23,12 @@ services:
     container_name: loan_verification_service
     ports:
       - "8001:8001"
+    
+  check-validation-service:
+    build: ./check-validation-service
+    container_name: check_validation_service
+    ports:
+      - "8002:8002"
 
   postgres:
     image: postgres:15
