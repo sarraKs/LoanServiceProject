@@ -10,7 +10,8 @@ services:
     depends_on:
       - postgres
       - loan-verification-service
-      - risk-assessment-service  
+      - risk-assessment-service 
+      - notification-service 
     environment:
       DB_USER: user1
       DB_PASS: password1
@@ -29,6 +30,13 @@ services:
     container_name: risk_assessment_service
     ports:
       - "50051:50051"
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification_service
+    ports:
+      - "8003:8003"
+
 
   postgres:
     image: postgres:15

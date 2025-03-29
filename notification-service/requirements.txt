@@ -6,7 +6,7 @@ uvicorn
 graphene
 
 # GraphQL client dependency
-gql[requests]>=3.4.0
+gql[requests]
 
 # PostgreSQL + ORM
 sqlalchemy
