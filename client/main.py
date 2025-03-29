@@ -1,46 +1,89 @@
 import requests
+import time
 
-# URLs for the customer-service API
-API_URL_SUBMIT_LOAN = "http://localhost:8000/apply-loan"
-API_URL_VALIDATE_CHECK = "http://localhost:8000/validate-check"
+# === Configuration ===
+BASE_URL = "http://localhost:8000"
+NOTIF_URL = "http://localhost:8003/notify"
 
-# Example loan data to submit
+API_SUBMIT_LOAN = f"{BASE_URL}/apply-loan"
+API_VALIDATE_CHECK = f"{BASE_URL}/validate-check"
+
+# === Fake customer input ===
+customer_id = "53"
+loan_amount = 55000.0
+
 loan_data = {
-    "customer_id": "008",
-    "first_name": "Amelie",
-    "last_name": "Mre",
-    "email": "amelie@example.com",
-    "phone": "5552444",
+    "customer_id": customer_id,
+    "first_name": "Johnny",
+    "last_name": "Hd",
+    "email": "johnny@example.com",
+    "phone": "55522",
     "address": "86 Example Street",
-    "loan_type": "personal",
-    "loan_amount": 15000.0,
-    "loan_description": "i just want a loan"
+    "loan_type": "commercial",
+    "loan_amount": loan_amount,
+    "loan_description": "buy something"
 }
 
-# Submit loan request
-response = requests.post(API_URL_SUBMIT_LOAN, json=loan_data)
 
-print("Submit Loan Status Code:", response.status_code)
-try:
-    print("Submit Loan Response:", response.json())
-except Exception:
-    print("Submit Loan Response Error: Could not decode JSON")
+def send_notification(customer_id, message, channel="email"):
+    payload = {
+        "customer_id": customer_id,
+        "channel": channel,
+        "message": message
+    }
+    try:
+        res = requests.post(NOTIF_URL, json=payload)
+        if res.status_code == 200:
+            print(f"NOTIFICATION → {message}")
+        else:
+            print(f"Failed to notify: {res.text}")
+    except Exception as e:
+        print(f"Notification error: {e}")
 
-# SHOULD RECEIVE NOTIFICATION HERE TO SUBMIT A CHECK 
-# THE VALIDATE CHECK REQUEST SHOULD ONLY BE MADE IF THIS NOTIFICATION ARRIVES 
 
-# Example check data to submit and validate
+# === STEP 1 — Submit loan ===
+print(" Submitting loan request...")
+send_notification(customer_id, "Submitting loan request...")
+
+response = requests.post(API_SUBMIT_LOAN, json=loan_data)
+print("Loan Request Status:", response.status_code)
+
+if response.status_code != 200:
+    send_notification(customer_id, "Loan declined ")
+    print(" Loan rejected. Process stopped.")
+    exit()
+
+loan_response = response.json()
+send_notification(customer_id, "Loan request approved (pre-check)")
+print("Loan approved for next step.")
+
+# === STEP 2 — Notification to submit check ===
+check_amount = loan_amount / 10
+check_message = f"Please submit a cashier's check of {check_amount:.2f} €"
+send_notification(customer_id, check_message)
+print(f"{check_message}")
+time.sleep(1.5)
+
+# === STEP 3 — Validate check ===
+print("Submitting check for validation...")
 check_data = {
-    "customer_id": "008",
-    "check_amount": 1500.0,
-    "signature": True,
+    "customer_id": customer_id,
+    "check_amount": check_amount,
+    "signature": True
 }
 
-# Validate the check
-response2 = requests.post(API_URL_VALIDATE_CHECK, json=check_data)
+response2 = requests.post(API_VALIDATE_CHECK, json=check_data)
+print("Check Validation Status:", response2.status_code)
 
-print("Validate Check Status Code:", response2.status_code)
-try:
-    print("Validate Check Response:", response2.json())
-except Exception:
-    print("Validate Check Response Error: Could not decode JSON")
+if response2.status_code != 200:
+    send_notification(customer_id, "Check validation failed ")
+    print(" Check validation error. Process stopped.")
+    exit()
+
+check_result = response2.json()
+if check_result.get("check_valid"):
+    send_notification(customer_id, "Loan approved Funds will be transferred.")
+    print(" Loan fully approved and check validated.")
+else:
+    send_notification(customer_id, "Loan rejected : invalid check.")
+    print(" Loan rejected due to check.")
