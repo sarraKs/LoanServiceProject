@@ -59,16 +59,6 @@
     docker compose up --build
 
 
-- Steps to run the app : 
-
-    -  Launch the soap service : 
-        - cd loan-verification-service
-        - python3 main.py
-    - Launch the GRPC service : 
-        - cd risk-assessment-service
-        - python3 main.py
-    - Launch the customer service : 
-
 
 
 
