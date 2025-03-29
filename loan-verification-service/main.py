@@ -7,7 +7,7 @@ class LoanVerificationService(ServiceBase):
     
     @rpc(Unicode, Float, _returns=Boolean)
     def loan_amount_acceptation(ctx, customer_id, amount):
-        MAX_LOAN_AMOUNT = 50000
+        MAX_LOAN_AMOUNT = 50000.0
         if amount <= MAX_LOAN_AMOUNT:
             return True
         return False
