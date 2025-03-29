@@ -6,14 +6,14 @@ API_URL_VALIDATE_CHECK = "http://localhost:8000/validate-check"
 
 # Example loan data to submit
 loan_data = {
-    "customer_id": "004",
+    "customer_id": "24",
     "first_name": "Johnny",
     "last_name": "Hd",
     "email": "johnny@example.com",
     "phone": "55522",
     "address": "86 Example Street",
     "loan_type": "commercial",
-    "loan_amount": 15000.0,
+    "loan_amount": 23000.0,
     "loan_description": "buy something"
 }
 
@@ -31,7 +31,7 @@ except Exception:
 
 # Example check data to submit and validate
 check_data = {
-    "customer_id": "004",
+    "customer_id": "21",
     "check_amount": 1200.0,
     "signature": True,
 }

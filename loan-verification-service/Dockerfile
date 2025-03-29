@@ -6,4 +6,4 @@ COPY . .
 
 RUN pip install spyne lxml
 
-CMD ["python", "main.py"]
+CMD ["python3", "main.py"]
