@@ -58,31 +58,41 @@ def apply_loan(request: LoanRequest):
     if exists:
         db.close()
         raise HTTPException(status_code=400, detail="Customer already exists")
-    
-    new_request = CustomerLoanRequest(**request.dict())
 
+    new_request = CustomerLoanRequest(**request.dict())
     db.add(new_request)
     db.commit()
     db.refresh(new_request)
 
     # ADD NOTIFICATION : LOAN REQUEST SUBMITED
 
-    # Appel SOAP pour vérifier le montant (à voir)
-    if not check_loan_amount(request.customer_id, request.loan_amount):
+    # Appel SOAP avec affichage du résultat
+    soap_result = check_loan_amount(request.customer_id, request.loan_amount)
+    if soap_result:
+        print(f"SOAP check passed: Loan amount {request.loan_amount} is accepted for {request.customer_id}")
+    else:
+        print(f"SOAP check failed: Loan amount {request.loan_amount} exceeds the limit for {request.customer_id}")
+        db.close()
         raise HTTPException(status_code=400, detail="Loan amount exceeds allowed limit")
 
-    # Appel GRPC pour vérifier le risque 
-    #risk_level = get_customer_risk(request.customer_id)
-    #if risk_level == "high" and request.loan_amount >= 20000:
-    #   raise HTTPException(status_code=400, detail="Loan rejected due to high risk")
+    # Appel gRPC (décommenter si prêt)
+    # risk = get_customer_risk(request.customer_id)
+    # if risk == "high" and request.loan_amount >= 20000:
+    #     print(f"Loan rejected: High risk and amount ≥ 20000 for {request.customer_id}")
+    #     db.close()
+    #     raise HTTPException(status_code=400, detail="Loan rejected due to high risk")
 
-    #return {"message": "Loan request received", "customer_id": request.customer_id}
     db.close()
+    return {
+        "message": "Loan request successfully processed",
+        "customer_id": request.customer_id
+    }
+
 
 #-----------------------SOAP client ------------------(à voir) 
 def check_loan_amount(customer_id: str, amount: float) -> bool:
     try:
-        wsdl_url = "http://localhost:8001/?wsdl"
+        wsdl_url = "http://loan-verification-service:8001/?wsdl"
         client = Client(wsdl=wsdl_url)
         result = client.service.loan_amount_acceptation(customer_id, float(amount))
         print("SOAP result:", result)

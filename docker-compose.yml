@@ -9,12 +9,19 @@ services:
       - "8000:8000"
     depends_on:
       - postgres
+      - loan-verification-service
     environment:
       DB_USER: user1
       DB_PASS: password1
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: loans_db
+
+  loan-verification-service:
+    build: ./loan-verification-service
+    container_name: loan_verification_service
+    ports:
+      - "8001:8001"
 
   postgres:
     image: postgres:15
