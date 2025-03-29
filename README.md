@@ -34,11 +34,11 @@
     
     pip install -r requirements.txt
 
-- From within the customer-service folder, run:
+- To run only the customer-service and in local, run:
 
     uvicorn main:app --reload
 
-- From within the client folder, run : 
+- To From within the client folder, run : 
 
     python main.py
 
@@ -53,6 +53,10 @@
 - to quit database :
 
     \q
+
+- To run the whole app using docker compose :
+
+    docker compose up --build
 
 
 - Steps to run the app : 

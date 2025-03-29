@@ -8,7 +8,7 @@ from enum import Enum
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from customer_model import Base, CustomerLoanRequest, LoanTypeEnum
-from gql import gql, Client as GQLClient
+from gql import gql, Client 
 from gql.transport.requests import RequestsHTTPTransport
 from zeep import Client as ZeepClient
 
@@ -156,16 +156,14 @@ def validate_check(data: CheckInput):
     if not loan:
         raise HTTPException(status_code=404, detail="Customer not found")
 
-    # GraphQL check
-    transport = RequestsHTTPTransport(url="http://localhost:8002/graphql", verify=False)
-    client = GQLClient(transport=transport, fetch_schema_from_transport=False)
+    #-----------------------GraphQL Client--------------------
+    transport = RequestsHTTPTransport(url="http://check-validation-service:8002/graphql", verify=False)
+    client = Client(transport=transport, fetch_schema_from_transport=False)
 
     query = gql("""
-        mutation ValidateCheck($checkAmount: Float!, $signature: Boolean!, $loanAmount: Float!) {
-            validateCheck(checkAmount: $checkAmount, signature: $signature, loanAmount: $loanAmount) {
-                ok
-            }
-        }
+    mutation ValidateCheck($checkAmount: Float!, $signature: Boolean!, $loanAmount: Float!) {
+        validateCheck(checkAmount: $checkAmount, signature: $signature, loanAmount: $loanAmount)
+    }
     """)
 
     result = client.execute(query, variable_values={
@@ -174,6 +172,6 @@ def validate_check(data: CheckInput):
         "loanAmount": loan.loan_amount
     })
 
-    return {"check_valid": result["validateCheck"]["ok"]}
+    return {"check_valid": result["validateCheck"]}
 
    

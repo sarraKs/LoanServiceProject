@@ -1,23 +1,22 @@
+import strawberry
+from strawberry.fastapi import GraphQLRouter
 from fastapi import FastAPI
-from starlette.graphql import GraphQLApp
-import graphene
 
-class ValidateCheck(graphene.Mutation):
-    class Arguments:
-        check_amount = graphene.Float(required=True)
-        signature = graphene.Boolean(required=True)
-        loan_amount = graphene.Float(required=True)
 
-    ok = graphene.Boolean()
+@strawberry.type
+class Query:
+    hello: str = "CheckValidationService running"
 
-    def mutate(self, info, check_amount, signature, loan_amount):
-        valid = round(check_amount, 2) == round(loan_amount / 10, 2) and signature
-        return ValidateCheck(ok=valid)
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    def validate_check(self, check_amount: float, signature: bool, loan_amount: float) -> bool:
+        return round(check_amount, 2) == round(loan_amount / 10, 2) and signature
 
-class Mutation(graphene.ObjectType):
-    validate_check = ValidateCheck.Field()
+schema = strawberry.Schema(query=Query, mutation=Mutation)
 
-schema = graphene.Schema(mutation=Mutation)
+graphql_app = GraphQLRouter(schema)
 
 app = FastAPI()
-app.add_route("/graphql", GraphQLApp(schema=schema))
+app.include_router(graphql_app, prefix="/graphql")
+

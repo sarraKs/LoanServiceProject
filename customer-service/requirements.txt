@@ -10,3 +10,4 @@ grpcio-tools
 spyne
 lxml
 python-dotenv
+gql[requests]
