@@ -11,6 +11,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from customer_model import Base, CustomerLoanRequest, LoanTypeEnum
 import os
+from gql import gql, Client
+from gql.transport.requests import RequestsHTTPTransport
+
 
 app = FastAPI()
 
@@ -45,7 +48,7 @@ class LoanRequest(BaseModel):
 def root():
     return {"message": "CustomerService with PostgreSQL is running"}
 
-# ---------- Endpoint REST ----------
+# ---------- Endpoint REST to submit a loan ----------
 
 @app.post("/apply-loan")
 def apply_loan(request: LoanRequest):
@@ -61,7 +64,13 @@ def apply_loan(request: LoanRequest):
     db.commit()
     db.refresh(new_request)
 
+<<<<<<< HEAD
     # Appel SOAP 
+=======
+    # ADD NOTIFICATION : LOAN REQUEST SUBMITED
+
+    # Appel SOAP avec affichage du résultat
+>>>>>>> 8ce776dfaaafde4e6d6b100ff9208209d4c7dc6c
     soap_result = check_loan_amount(request.customer_id, request.loan_amount)
     if soap_result:
         print(f"SOAP check passed: Loan amount {request.loan_amount} is accepted for {request.customer_id}")
@@ -112,5 +121,42 @@ def get_customer_risk(customer_id: str) -> str:
     except Exception as e:
         print("gRPC Error:", e)
         return "high"  # par défaut on rejette si le service échoue
+    
+
+class CheckInput(BaseModel):
+    customer_id: str
+    check_amount: float
+    signature: bool
+
+#----------------------- REST Endpoint to validate a check --------------------
+
+@app.post("/validate-check")
+def validate_check(data: CheckInput):
+    db = SessionLocal()
+    loan = db.query(CustomerLoanRequest).filter_by(customer_id=data.customer_id).first()
+    db.close()
+
+    if not loan:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    #-----------------------GraphQL Client--------------------
+    transport = RequestsHTTPTransport(url="http://localhost:8002/graphql", verify=False)
+    client = Client(transport=transport, fetch_schema_from_transport=False)
+
+    query = gql("""
+        mutation ValidateCheck($checkAmount: Float!, $signature: Boolean!, $loanAmount: Float!) {
+            validateCheck(checkAmount: $checkAmount, signature: $signature, loanAmount: $loanAmount) {
+                ok
+            }
+        }
+    """)
+
+    result = client.execute(query, variable_values={
+        "checkAmount": data.check_amount,
+        "signature": data.signature,
+        "loanAmount": loan.loan_amount
+    })
+
+    return {"check_valid": result["validateCheck"]["ok"]}
 
    
