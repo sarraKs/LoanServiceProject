@@ -21,9 +21,9 @@ def validate_check(customer_id: str, message: str):
     requests.post(API_VALIDATE_CHECK, json=check_data)
 
 
-def main():
+def new_loan():
     # === Example customer input ===
-    customer_id = "56"
+    customer_id = "57"
     loan_amount = 5500.0
 
     loan_data = {
@@ -42,4 +42,3 @@ def main():
     print("Submitting loan request...")
 
     requests.post(API_SUBMIT_LOAN, json=loan_data)
-    

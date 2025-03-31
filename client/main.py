@@ -13,7 +13,7 @@ class Notification(BaseModel):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Lifespan triggered: submitting initial loan")
-    submit_loan.main()
+    submit_loan.new_loan()
     yield
     print("App shutting down")
 
