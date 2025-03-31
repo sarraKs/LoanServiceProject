@@ -1,3 +1,4 @@
+import time
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, EmailStr
 import grpc
@@ -27,8 +28,8 @@ DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "loans_db")
 DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
-#NOTIFICATION_SERVICE_URL = os.getenv("NOTIFICATION_SERVICE_URL", "http://notification-service:8003/notify")
+NOTIFY_URL = "http://notification-service:8003/notify"
+NOTIFY_REQUEST_CHECK_URL = "http://notification-service:8003/request-check"
 
 # ---------------------- DB Setup ----------------------
 
@@ -56,20 +57,26 @@ class CheckInput(BaseModel):
 
 # ---------------------- Utils ----------------------
 
-def send_notification(customer_id: str, message: str, channel: str = "email"):
+def send_notification(customer_id: str, message: str):
     try:
-        payload = {
+        requests.post(NOTIFY_URL, json={
             "customer_id": customer_id,
-            "channel": channel,
             "message": message
-        }
-        response = requests.post(NOTIFICATION_SERVICE_URL, json=payload)
-        if response.status_code == 200:
-            print(f"Notification sent to {customer_id}: {message}")
-        else:
-            print(f"Notification failed ({response.status_code}): {response.text}")
+        })
+        print("Notification sent")
     except Exception as e:
-        print(f"Notification error: {e}")
+        print("Failed to notify customer:", e)
+
+def send_notification_check_request(customer_id: str, message: str):
+    try:
+        requests.post(NOTIFY_REQUEST_CHECK_URL, json={
+            "customer_id": customer_id,
+            "message": message
+        })
+        print("Notification sent")
+    except Exception as e:
+        print("Failed to notify customer:", e)
+
 
 def check_loan_amount(customer_id: str, amount: float) -> bool:
     try:
@@ -114,30 +121,30 @@ def apply_loan(request: LoanRequest):
     db.refresh(new_request)
 
     # 1. Notify customer : loan request submitted
-    #send_notification(request.customer_id, "Loan request submitted and being processed.")
+    send_notification(request.customer_id, f"Loan request of {request.loan_amount} submitted and being processed.")
 
     # 2. Loan amount check (using SOAP) : 
     soap_result = check_loan_amount(request.customer_id, request.loan_amount)
     if not soap_result:
         # 3. Notify customer if loan declined
-        #send_notification(request.customer_id, "Loan declined: amount exceeds the firm's limit.")
+        send_notification(request.customer_id, "Loan declined: amount exceeds the firm's limit.")
         db.close()
         raise HTTPException(status_code=400, detail="Loan amount exceeds allowed limit")
 
-    print(f"SOAP check passed for {request.customer_id}")
+    #print(f"SOAP check passed for {request.customer_id}")
 
     # 4. Risk check (using gRPC) :
     risk = get_customer_risk(request.customer_id)
     print(f"gRPC Risk check for {request.customer_id} returned: {risk}")
     if risk == "high" and request.loan_amount >= 20000.0:
         # 5. Notify customer if loan declined
-        #send_notification(request.customer_id, "Loan declined: high risk profile detected.")
+        send_notification(request.customer_id, "Loan declined: high risk profile detected.")
         db.close()
-        raise HTTPException(status_code=400, detail="Loan rejected due to high risk")
+        raise HTTPException(status_code=400, detail="Loan declined due to high risk")
 
     # 6. Notify customer to submit a cashier check
-    #check_amount = request.loan_amount / 10
-    #send_notification(request.customer_id, f"Please submit a cashier's check of {check_amount:.2f} for loan processing.")
+    requested_check_amount = request.loan_amount / 10
+    send_notification_check_request(request.customer_id, f"First checks passed. Please submit a cashier's check of {requested_check_amount:.2f} for loan processing.")
 
     db.close()
     return {
@@ -176,6 +183,12 @@ def validate_check(data: CheckInput):
     
     # If the check is valid, wait 3 seconds, then
     # 8. Notify customer : loan approved
+
+    if result["validateCheck"]:
+        time.sleep(3)
+        send_notification(data.customer_id, "Loan approved. Congratulations !")
+    else:
+        send_notification(data.customer_id, "Loan declined due to invalid check.")
 
     return {"check_valid": result["validateCheck"]}
 

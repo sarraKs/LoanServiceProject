@@ -30,13 +30,18 @@
 
 ### How to run the application 
 
-- install docker compose in your machine
+- install docker compose in your machine.
 
 - clone this repository and go to the project folder. 
 
-- run :
+- create a docker network :
+    docker network create loan-net
 
-    docker compose up --build
+- run the microservices application : 
+    docker compose -f docker-compose.yml up --build
+
+- run the client service in another terminal : 
+    docker compose -f client/docker-compose-client.yml up --build
 
 ### Q&A 
 

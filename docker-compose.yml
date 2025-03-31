@@ -19,36 +19,50 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: loans_db
+    networks:
+      - loan-net
 
   loan-verification-service:
     build: ./loan-verification-service
     container_name: loan_verification_service
     ports:
       - "8001:8001"
+    networks:
+      - loan-net
     
   check-validation-service:
     build: ./check-validation-service
     container_name: check_validation_service
     ports:
       - "8002:8002"
+    depends_on:
+      - bank-service
+    networks:
+      - loan-net
 
   risk-assessment-service:  
     build: ./risk-assessment-service
     container_name: risk_assessment_service
     ports:
       - "50051:50051"
+    networks:
+      - loan-net
 
   notification-service:
     build: ./notification-service
     container_name: notification_service
     ports:
       - "8003:8003"
+    networks:
+      - loan-net
 
   bank-service:
     build: ./bank-service
     container_name: bank_service
     ports:
       - "8004:8004"
+    networks:
+      - loan-net
 
   postgres:
     image: postgres:15
@@ -61,6 +75,12 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - loan-net
 
 volumes:
   pgdata:
+
+networks:
+  loan-net:
+    external: true

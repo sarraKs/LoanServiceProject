@@ -1,31 +1,34 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from enum import Enum
+import requests
 
 app = FastAPI()
 
-class ChannelEnum(str, Enum):
-    email = "email"
-    sms = "sms"
+CLIENT_NOTIFICATION_URL = "http://client-service:8005/notification"
+CLIENT_CHECK_REQUEST_URL = "http://client-service:8005/request-check"
 
 class Notification(BaseModel):
     customer_id: str
-    channel: ChannelEnum
     message: str
 
 @app.post("/notify")
-def notify(notification: Notification):
-    # Simulate notification (email or SMS)
-    print(f"Notification sent to {notification.customer_id} via {notification.channel.upper()}")
-    print(f"Message: {notification.message}")
+def send_notification(notification: Notification):
+    try:
+        response = requests.post(CLIENT_NOTIFICATION_URL, json={
+            "customer_id": notification.customer_id,
+            "message": notification.message
+        })
+        return {"status": "sent", "client_response": response.json()}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
     
-    return {
-        "status": "sent",
-        "to": notification.customer_id,
-        "channel": notification.channel,
-        "message": notification.message
-    }
-
-@app.get("/")
-def root():
-    return {"message": "NotificationService is running"}
+@app.post("/request-check")
+def send_notification_check_request(notification: Notification):
+    try:
+        response = requests.post(CLIENT_CHECK_REQUEST_URL, json={
+            "customer_id": notification.customer_id,
+            "message": notification.message
+        })
+        return {"status": "sent", "client_response": response.json()}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
