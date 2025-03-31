@@ -44,6 +44,11 @@ services:
     ports:
       - "8003:8003"
 
+  bank-service:
+    build: ./bank-service
+    container_name: bank_service
+    ports:
+      - "8004:8004"
 
   postgres:
     image: postgres:15

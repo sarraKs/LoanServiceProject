@@ -25,38 +25,47 @@
 - LoanVerificationService (SOAP API) : Checks whether the requested loan amount is lower than the firm's maximum limit. If the amount exceeds the limit, the loan is rejected (NotificationService is called).
 - RiskAssessmentService (gRPC API) : Evaluates the customer's financial profile based on banking activity. Returns a risk level (Low, Medium, High). If the risk is High and the loan is >= 20000, the loan is rejected (NotificationService is called).
 - CheckValidationService (GraphQL API) : Receives customer's check and validates the check (checkAmount is equal to loanAmount/10 and signature is equal to True). If the check is validated, call BankService. Else the loan is rejected.
-- BankService (SOAP API) : Provides Loan and adds them to the customer’s bank account. And, notifies the customer of the approval of the loan (NotificationService).
+- BankService (REST API) : Provides Loan and adds them to the customer’s bank account. And, notifies the customer of the approval of the loan (NotificationService).
 - NotificationService (REST API) : Notifies customers about loan approval or rejection via email/SMS.
 
 ### How to run the application 
 
-- install the requirements : 
+- install docker compose in your machine
+
+- clone this repository and go to the project folder. 
+
+- run :
+
+    docker compose up --build
+
+### Q&A 
+
+- To install the requirements of a microservice: 
     
     pip install -r requirements.txt
 
-- To run only the customer-service and in local, run:
+- To run only the customer-service in local :
 
+    cd customer-service
     uvicorn main:app --reload
 
-- To From within the client folder, run : 
+- To run the client : 
 
+    cd client
     python main.py
 
-- To confirm data in db :
+- To confirm data in postgres database :
 
     docker exec -it loan_postgres psql -U user1 -d loans_db
 
-- in the following prompt : loans_db=#
+- In the following database prompt : loans_db=#
 
     SELECT * FROM loan_requests;
 
-- to quit database :
+- To quit database :
 
     \q
 
-- To run the whole app using docker compose :
-
-    docker compose up --build
 
 
 

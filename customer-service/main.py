@@ -28,7 +28,7 @@ DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "loans_db")
 DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-NOTIFICATION_SERVICE_URL = os.getenv("NOTIFICATION_SERVICE_URL", "http://notification-service:8003/notify")
+#NOTIFICATION_SERVICE_URL = os.getenv("NOTIFICATION_SERVICE_URL", "http://notification-service:8003/notify")
 
 # ---------------------- DB Setup ----------------------
 
@@ -113,29 +113,31 @@ def apply_loan(request: LoanRequest):
     db.commit()
     db.refresh(new_request)
 
-    # 1. Notify: loan request submitted
-    send_notification(request.customer_id, "Loan request submitted and being processed.")
+    # 1. Notify customer : loan request submitted
+    #send_notification(request.customer_id, "Loan request submitted and being processed.")
 
-    # 2. SOAP check
+    # 2. Loan amount check (using SOAP) : 
     soap_result = check_loan_amount(request.customer_id, request.loan_amount)
     if not soap_result:
-        send_notification(request.customer_id, "Loan declined: amount exceeds the firm's limit.")
+        # 3. Notify customer if loan declined
+        #send_notification(request.customer_id, "Loan declined: amount exceeds the firm's limit.")
         db.close()
         raise HTTPException(status_code=400, detail="Loan amount exceeds allowed limit")
 
     print(f"SOAP check passed for {request.customer_id}")
 
-    # 3. gRPC risk check
+    # 4. Risk check (using gRPC) :
     risk = get_customer_risk(request.customer_id)
     print(f"gRPC Risk check for {request.customer_id} returned: {risk}")
     if risk == "high" and request.loan_amount >= 20000.0:
-        send_notification(request.customer_id, "Loan declined: high risk profile detected.")
+        # 5. Notify customer if loan declined
+        #send_notification(request.customer_id, "Loan declined: high risk profile detected.")
         db.close()
         raise HTTPException(status_code=400, detail="Loan rejected due to high risk")
 
-    # 4. Notify to submit cashier check
-    check_amount = request.loan_amount / 10
-    send_notification(request.customer_id, f"Please submit a cashier's check of {check_amount:.2f} for loan processing.")
+    # 6. Notify customer to submit a cashier check
+    #check_amount = request.loan_amount / 10
+    #send_notification(request.customer_id, f"Please submit a cashier's check of {check_amount:.2f} for loan processing.")
 
     db.close()
     return {
@@ -150,13 +152,13 @@ def apply_loan(request: LoanRequest):
 @app.post("/validate-check")
 def validate_check(data: CheckInput):
     db = SessionLocal()
+    # Verify that the customer who submitted the check, exists (submitted a loan previously)
     loan = db.query(CustomerLoanRequest).filter_by(customer_id=data.customer_id).first()
     db.close()
-
     if not loan:
         raise HTTPException(status_code=404, detail="Customer not found")
 
-    #-----------------------GraphQL Client--------------------
+    # 7. Check validation (using graphQL) : 
     transport = RequestsHTTPTransport(url="http://check-validation-service:8002/graphql", verify=False)
     client = Client(transport=transport, fetch_schema_from_transport=False)
 
@@ -171,6 +173,9 @@ def validate_check(data: CheckInput):
         "signature": data.signature,
         "loanAmount": loan.loan_amount
     })
+    
+    # If the check is valid, wait 3 seconds, then
+    # 8. Notify customer : loan approved
 
     return {"check_valid": result["validateCheck"]}
 
