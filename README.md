@@ -43,6 +43,11 @@
 - run the client service in another terminal : 
     docker compose -f client/docker-compose-client.yml up --build
 
+- Alternative (run the two client parts in different terminals):
+    run the app : docker compose -f docker-compose.yml up --build
+    run the client fastapi main.py : docker compose -f client/docker-compose-client.yml up --build
+    run the client submit_loan.py to start the scenario : docker exec -it client_service python submit_loan.py
+
 ### Q&A 
 
 - To install the requirements of a microservice: 

@@ -9,7 +9,7 @@ import risk_pb2
 import risk_pb2_grpc
 
 class RiskAssessmentServicer(risk_pb2_grpc.RiskAssessmentServicer):
-    # Les clients avec un ID pair ont un risque faible, sinon élevé
+    # Les clients avec un ID pair ont un risque faible, les autres ont un risque élevé
     def AssessCustomerRisk(self, request, context):
         digits = ''.join(filter(str.isdigit, request.customer_id))
         risk_level = "high"
@@ -24,7 +24,7 @@ class RiskAssessmentServicer(risk_pb2_grpc.RiskAssessmentServicer):
             risk_level=risk_level
         )
 
-# ✅ La fonction serve() doit être **en dehors** de la classe
+# La fonction serve() doit être en dehors de la classe
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     risk_pb2_grpc.add_RiskAssessmentServicer_to_server(RiskAssessmentServicer(), server)

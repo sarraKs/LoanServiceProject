@@ -18,6 +18,7 @@ def send_notification(notification: Notification):
             "customer_id": notification.customer_id,
             "message": notification.message
         })
+        #print(f"client_response: {response.json()}")
         return {"status": "sent", "client_response": response.json()}
     except Exception as e:
         return {"status": "failed", "error": str(e)}

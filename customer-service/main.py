@@ -63,7 +63,7 @@ def send_notification(customer_id: str, message: str):
             "customer_id": customer_id,
             "message": message
         })
-        print("Notification sent")
+        #print("Notification sent")
     except Exception as e:
         print("Failed to notify customer:", e)
 
@@ -73,7 +73,7 @@ def send_notification_check_request(customer_id: str, message: str):
             "customer_id": customer_id,
             "message": message
         })
-        print("Notification sent")
+        #print("Notification sent")
     except Exception as e:
         print("Failed to notify customer:", e)
 
@@ -83,7 +83,7 @@ def check_loan_amount(customer_id: str, amount: float) -> bool:
         wsdl_url = "http://loan-verification-service:8001/?wsdl"
         client = ZeepClient(wsdl=wsdl_url)
         result = client.service.loan_amount_acceptation(customer_id, float(amount))
-        print("SOAP result:", result)
+        print("Loan amount verification (SOAP result):", result)
         return result
     except Exception as e:
         print("SOAP Error:", e)
@@ -112,6 +112,7 @@ def apply_loan(request: LoanRequest):
 
     exists = db.query(CustomerLoanRequest).filter_by(customer_id=request.customer_id).first()
     if exists:
+        send_notification(request.customer_id, f"From customer-service: Customer {request.customer_id} already exists. You already submitted a loan request.")
         db.close()
         raise HTTPException(status_code=400, detail="Customer already exists")
 
@@ -120,14 +121,16 @@ def apply_loan(request: LoanRequest):
     db.commit()
     db.refresh(new_request)
 
+    print(f"loan request received from customer {request.customer_id}.")
+
     # 1. Notify customer : loan request submitted
-    send_notification(request.customer_id, f"Loan request of {request.loan_amount} submitted and being processed.")
+    send_notification(request.customer_id, f"From customer-service: Loan request of {request.loan_amount} submitted and being processed.")
 
     # 2. Loan amount check (using SOAP) : 
     soap_result = check_loan_amount(request.customer_id, request.loan_amount)
     if not soap_result:
         # 3. Notify customer if loan declined
-        send_notification(request.customer_id, "Loan declined: amount exceeds the firm's limit.")
+        send_notification(request.customer_id, "From customer-service: Loan declined: amount exceeds the firm's limit.")
         db.close()
         raise HTTPException(status_code=400, detail="Loan amount exceeds allowed limit")
 
@@ -135,16 +138,16 @@ def apply_loan(request: LoanRequest):
 
     # 4. Risk check (using gRPC) :
     risk = get_customer_risk(request.customer_id)
-    print(f"gRPC Risk check for {request.customer_id} returned: {risk}")
+    print(f"Risk level check (gRPC result): {risk}")
     if risk == "high" and request.loan_amount >= 20000.0:
         # 5. Notify customer if loan declined
-        send_notification(request.customer_id, "Loan declined: high risk profile detected.")
+        send_notification(request.customer_id, "From customer-service: Loan declined: high risk profile detected.")
         db.close()
         raise HTTPException(status_code=400, detail="Loan declined due to high risk")
 
     # 6. Notify customer to submit a cashier check
     requested_check_amount = request.loan_amount / 10
-    send_notification_check_request(request.customer_id, f"First checks passed. Please submit a cashier's check of {requested_check_amount:.2f} for loan processing.")
+    send_notification_check_request(request.customer_id, f"From customer-service: First checks passed. Please submit a cashier's check of {requested_check_amount:.2f} for loan processing.")
 
     db.close()
     return {
@@ -181,15 +184,18 @@ def validate_check(data: CheckInput):
         "loanAmount": loan.loan_amount
     })
     
+    check_valid = result["validateCheck"]
+    print(f"Check validation (Graphql result): {check_valid}")
+
     # If the check is valid, wait 3 seconds, then
     # 8. Notify customer : loan approved
 
-    if result["validateCheck"]:
+    if check_valid:
         time.sleep(3)
-        send_notification(data.customer_id, "Loan approved. Congratulations !")
+        send_notification(data.customer_id, "From customer-service: Loan approved. Congratulations !")
     else:
-        send_notification(data.customer_id, "Loan declined due to invalid check.")
+        send_notification(data.customer_id, "From customer-service: Loan declined due to invalid check.")
 
-    return {"check_valid": result["validateCheck"]}
+    return {"check_valid": check_valid}
 
    
