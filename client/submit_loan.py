@@ -25,7 +25,7 @@ def validate_check(customer_id: str, message: str):
 #def main():
 if __name__ == "__main__":
     # === Example customer input ===
-    customer_id = "76"
+    customer_id = "77"
     loan_amount = 25000.0
 
     loan_data = {

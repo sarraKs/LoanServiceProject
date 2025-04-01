@@ -34,47 +34,57 @@
 
 - clone this repository and go to the project folder. 
 
-- create a docker network :
-    docker network create loan-net
+- create a docker network : 
+
+    `docker network create loan-net`
 
 - run the microservices application : 
-    docker compose -f docker-compose.yml up --build
+
+    `docker compose -f docker-compose.yml up --build`
 
 - run the client service in another terminal : 
-    docker compose -f client/docker-compose-client.yml up --build
 
-- Alternative (run the two client parts in different terminals):
-    run the app : docker compose -f docker-compose.yml up --build
-    run the client fastapi main.py : docker compose -f client/docker-compose-client.yml up --build
+    `docker compose -f client/docker-compose-client.yml up --build`
+
+- Alternative (run the two client parts in different terminals): 
+
+    ```
+    run the app : docker compose -f docker-compose.yml up --build 
+    run the client fastapi main.py : docker compose -f client/docker-compose-client.yml up --build 
     run the client submit_loan.py to start the scenario : docker exec -it client_service python submit_loan.py
+    ```
 
 ### Q&A 
 
 - To install the requirements of a microservice: 
     
-    pip install -r requirements.txt
+    `pip install -r requirements.txt`
 
 - To run only the customer-service in local :
 
-    cd customer-service
+    ```
+    cd customer-service 
     uvicorn main:app --reload
+    ```
 
 - To run the client : 
 
+    ```
     cd client
     python main.py
+    ```
 
 - To confirm data in postgres database :
 
-    docker exec -it loan_postgres psql -U user1 -d loans_db
+    `docker exec -it loan_postgres psql -U user1 -d loans_db`
 
 - In the following database prompt : loans_db=#
 
-    SELECT * FROM loan_requests;
+    `SELECT * FROM loan_requests;`
 
 - To quit database :
 
-    \q
+    `\q`
 
 
 
