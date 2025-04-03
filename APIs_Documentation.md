@@ -8,7 +8,7 @@ This project is a complete loan approval system composed of several microservice
 
 | Service                | Port   | Description                                      |
 |------------------------|--------|--------------------------------------------------|
-| customer-service       | 8000   | Orchestrates loan applications and logic         |
+| customer-service       | 8000   | REST service: Orchestrates loan applications and logic         |
 | loan-verification      | 8001   | SOAP service: verifies max loan amount           |
 | check-validation       | 8002   | GraphQL service: validates check info            |
 | notification-service   | 8003   | Sends notifications to client                    |
@@ -34,7 +34,7 @@ _Submits a new loan application_
   "phone": "55522",
   "address": "86 Example Street",
   "loan_type": "personal",
-  "loan_amount": 25000,
+  "loan_amount": 25000.0,
   "loan_description": "Buy a car"
 }
 ```
@@ -42,12 +42,21 @@ _Submits a new loan application_
 ### Responses
 
 - **200 OK**  
-  Loan accepted, waiting for check validation.
+- Loan accepted, waiting for check validation.
+ ```json
+{
+  "message": "Loan request successfully processed",
+  "customer_id": "134",
+  "risk_level": "low",
+  "loan_amount": 25000.0,
+  "loan_type": "personal",
+  "status": "pending check validation"
+}
+```
 
 - **400 Bad Request**  
-  - Loan amount exceeds allowed limit.
-  - High risk profile.
-  - Customer already submitted a request.
+  - "Loan amount exceeds allowed limit."
+  - "Customer already exists".
 
 ---
 
