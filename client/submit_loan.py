@@ -83,7 +83,7 @@ if __name__ == "__main__":
     # Wait 8 seconds between two customer scenarios to have a clean client prompt
     time.sleep(8)
 
-    # This customer submits a loan request but the customer's profile has a high risk, and the amount exceeds 20000. I will be declined
+    # This customer submits a loan request but the customer's profile has a high risk, and the amount exceeds 20000. It will be declined
     customer_id = "97" # All customers with an ID impair have a high risk profile
     loan_amount =25000.0
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     # Wait 8 seconds between two customer scenarios to have a clean client prompt
     time.sleep(8)
 
-    # This customer submits a loan request but the cashier's check has a wrong amount. I will be declined
+    # This customer submits a loan request but the cashier's check has a wrong amount. It will be declined
     customer_id = "96"
     loan_amount =25000.0
 
