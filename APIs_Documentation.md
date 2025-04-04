@@ -191,7 +191,7 @@ GET /provide-loan?loan_amount=25000.0
 ```
 ---
 
-## Test Scenarios (client.py)
+## Test Scenarios (submit_loan.py)
 
 | Customer ID | Description                                        |
 |-------------|----------------------------------------------------|
